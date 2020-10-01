@@ -1,0 +1,11 @@
+certifi
+chardet
+dnspython
+idna
+lxml
+pip
+pymongo
+requests
+setuptools
+urllib3
+
