@@ -1,0 +1,160 @@
+---
+title: "Lets Roomie BI Dashboard"
+author: "Castor Dams"
+date: "30/09/2020"
+output:
+  html_document:
+    df_print: paged
+    toc_depth: '4'
+  pdf_document: 
+    keep_tex: yes
+    toc_depth: 4
+geometry: margin = 1.1cm
+classoption: landscape
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rjson)
+library(reticulate)
+library(rbin)
+use_condaenv('C:\\Users\\Jorge SRM\\.conda\\envs\\platzi_data\\python.exe')
+
+```
+
+
+\renewcommand{\contentsname}{Indice de Indicadores}
+
+\tableofcontents
+
+\newpage
+
+# Resumen
+
+En el presente dashboard se muestran los principales indicadores de la plataforma de Let's Roomie.
+
+Los datos mostrados son provenientes de la base de datos en MongoDB del proyecto. Dichos datos fueron scrapeados de la página de renta de apartamentos **www.fincaraiz.com.co** usando Xpath con Python.
+
+
+```{python MongoConnection, echo=FALSE, warning=FALSE}
+# MongoDB
+from pymongo import MongoClient
+from bson.json_util import dumps
+from bson.objectid import ObjectId
+
+# Python
+from io import open
+import os
+import json
+import ast
+
+
+# Web Scraping
+import requests
+import lxml.html as html
+
+# Pandas
+
+import pandas as pd
+
+
+cluster = MongoClient("mongodb+srv://db_admin_user:PlatziMaster123@castordams.nocgb.mongodb.net/lets_rommie?retryWrites=true&w=majority")
+
+db = cluster["lets_rommie"]
+collection = db["places"]
+
+# construction area of all available places
+cursor = collection.find({"avalaible": "true"}, {"size": 1, "_id": 0})
+
+ 
+
+# prices of all available places
+cursor_available_departments = collection.find({"avalaible": "true"}, {"price": 1, "size": 1, "_id": 0})
+
+
+# converting Query to Pandas Dataframe
+df = pd.DataFrame(list(cursor))
+
+df_prices = pd.DataFrame(list(cursor_available_departments))
+
+
+
+# Converting Data
+df_prices['size']= df_prices['size'].astype(str)
+df_prices["size_int"]= df_prices['size'].str.slice(0, -2, 1)
+df_prices["size_int"] = df_prices["size_int"].str.replace(',', '.', regex=True)
+
+df_prices = df_prices.drop(df_prices[(df_prices['size'] == '20')].index)
+df_prices = df_prices.drop(['size'], axis=1)
+df_prices['size_int'] = df_prices['size_int'].astype(float)
+df_prices['cantidad'] = 1
+
+df_prices['price']= df_prices['price'].astype(str)
+df_prices["price_int"]= df_prices['price'].str.slice(0, -2, 1)
+df_prices["price_int"] = df_prices["price_int"].str.replace(',', '', regex=True)
+df_prices["price_int"] = df_prices["price_int"].str.replace('$', '', regex=True)
+
+#df_prices['price']
+
+df_prices = df_prices.drop(['price'], axis=1)
+df_prices['price_int'] = df_prices['price_int'].astype(float)
+df_prices['price_int'] = df_prices['price_int']*100
+
+
+#df_prices['price_int']
+
+
+
+```
+
+# Lugares Publicados
+
+## Distribución de Precios Ofrecidos
+
+En el siguiente histograma se muestra la distribución de precios de los diferentes lugares ofertados en la plataforma.
+
+```{r WebScraper_Constants,fig.height=5, fig.width=7, fig.align='center', echo=FALSE, warning=FALSE, message=FALSE}
+
+# Librerias para los plots
+
+library(ggplot2)
+library(plyr)
+
+# Pasando los dataframes de pandas a R
+
+r_calis = py$df_prices
+
+r_suma_size <- aggregate(r_calis['cantidad'], by = r_calis['size_int'], sum)
+
+r_suma_price <- aggregate(r_calis['cantidad'], by = r_calis['price_int'], sum)
+
+
+ggplot(r_suma_price, aes(x=price_int))+
+  geom_histogram(color="darkblue", fill="lightblue") +
+  labs(title="Distribución de Precios de los Lugares Disponibles",x="Precios (Pesos COP)", y = "Número de Lugares")
+
+
+
+
+
+```
+
+En el eje Y se muestra el numero de lugares que ofrecen ese precio y en el eje X el Rango de los precios en Pesos Colombianos.
+
+
+
+## Área de Viviendas
+
+```{r Grafica_superficie , fig.height=5, fig.width=7, fig.align='center', echo=FALSE, warning=FALSE, message=FALSE}
+ggplot(r_suma_size, aes(x=size_int))+
+  geom_histogram(color="darkgreen", fill="lightgreen") +
+  labs(title="Área construida de Viviendas Disponibles",x="Area (metros cuadrados)", y = "Número de Lugares") + guides(size = FALSE)
+
+```
+
+El Área se refiere a la cantidad de metros cuadrados de construcción que tiene el departamento o la casa que ofrecen los usuarios en la plataforma.
+
+NOTA: El área no va relacionada con el precio ofrecido en la plataforma ya que no se toman en cuenta datos como la ubicación, los detalles de construcción ni los servicios externos a la vivienda.
+
+
