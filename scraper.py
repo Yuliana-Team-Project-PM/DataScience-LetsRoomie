@@ -8,6 +8,10 @@ import json
 import requests
 import lxml.html as html
 
+"""This scraper extract data about rental departments in bogota from www.fincaraiz.com.co, then
+it creates txt files with each place extracted in a JSON format"""
+
+
 HOME_URL = 'https://www.fincaraiz.com.co/apartamentos/arriendo/bogota/'
 
 XPATH_LINK_TO_ARTICLE = '//div[@class="span-title"]/a/@href'
@@ -26,12 +30,12 @@ def parse_notice(link, today):
     try:
         response = requests.get(link)
         if response.status_code == 200:
-            # Esto me trae el html del link
+
             notice = response.content.decode('utf-8')
             parsed = html.fromstring(notice)
 
             try:
-                # el xpath nos trae una lista, pero solo queremos el primer elemento
+
                 title = parsed.xpath(XPATH_TITLE)[0]
                 title = title.replace('\"', '')
                 summary = parsed.xpath(XPATH_SUMMARY)[0]
@@ -58,7 +62,7 @@ def parse_notice(link, today):
                 bathrooms = bathrooms.replace('Baños:', '')
 
             except IndexError:
-                # Si alguno no trae un elemento, me saca de la función
+
                 return
 
             with open(f'{today}/{address}.txt', 'w', encoding='utf-8') as f:
@@ -114,7 +118,7 @@ def parse_home():
             print(links_to_notices_complete)
 
             today = datetime.date.today().strftime('%d-%m-%Y')
-            # Creamos la carpeta con la fecha si no existe
+
             if not os.path.isdir(today):
                 os.mkdir(today)
             for link in links_to_notices_complete:

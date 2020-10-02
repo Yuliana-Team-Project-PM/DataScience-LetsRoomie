@@ -1,6 +1,6 @@
 # DataScience-LetsRoomie
 
----
+
 
 DataScience repository of Let's Roomie Project, you can access to the project [here](https://github.com/Yuliana-Team-Project-PM).
 
@@ -13,7 +13,7 @@ This repository contains:
 
 ## Developer Team
 
----
+
 
 
 
@@ -31,7 +31,7 @@ We are Castor's Dams. A group of Platzi Master' students from Colombia and Mexic
 
 ## Data Science Stack
 
----
+
 
 |  Resource  | Objetive |
 | ------- | ---- |
@@ -46,7 +46,7 @@ We are Castor's Dams. A group of Platzi Master' students from Colombia and Mexic
 
 ## Requirements
 
----
+
 
 Requirements for Python are inside ` requirements.txt` folder
 
