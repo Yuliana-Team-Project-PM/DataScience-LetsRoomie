@@ -44,13 +44,19 @@ We are Castor's Dams. A group of Platzi Master' students from Colombia and Mexic
 
 
 
-## Requirements
-
-
+## Install
 
 Requirements for Python are inside ` requirements.txt` folder
 
+To install requirements, you can run  `pip install -r requirements.txt`.
+
 Requirements for R are: R 3.5.1, `reticulate library`, `rmarkdown library`.
+
+To install R requirements, you can run `install.package('rmarkdown')`, `install.package('reticulate')`. Then you must specify the path to the venv  where you install the python requirements. NOTE: In the first chunk (code block) of the .Rmd file is where you can change the path.
+
+Is highly recommend to use Rstudio to run the .Rmd project.
+
+
 
 
 
